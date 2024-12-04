@@ -1,0 +1,38 @@
+apache2 config
+
+<VirtualHost *:80>
+    ServerName {host_name}
+    DocumentRoot {path_to_folder}/olx_price_tracker/public
+
+    <Directory {path_to_folder}/olx_price_tracker/public>
+        AllowOverride All
+        Options +Indexes
+        Require all granted
+    </Directory>
+
+    ErrorLog /var/log/apache2/{host_name}.log
+    CustomLog /var/log/apache2/{host_name}.log combined
+
+    # Serve .map files with the correct MIME type
+    AddType application/json .map
+
+    # Set the Expires header for .map files to 1 year (optional)
+    <IfModule mod_expires.c>
+        ExpiresByType application/json "access plus 1 year"
+    </IfModule>
+
+    # Enable the necessary headers for caching (optional)
+    <IfModule mod_headers.c>
+        Header set Cache-Control "public"
+        Header set Pragma "public"
+    </IfModule>
+
+AssignUserID {user} {user}
+
+</VirtualHost>
+
+example of post
+    curl -X POST -H "Content-Type: application/json"   -d
+    '{"url": "https://www.olx.ua/d/uk/obyavlenie/mishka-grova-bloody-v8-IDVBUnT.html?bs=olx_pro_listing",
+     "email": "user@example.com"}'
+     http://opt.l/index.php

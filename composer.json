@@ -1,0 +1,12 @@
+{
+    "name": "graff/olx_price_tracker",
+    "description": "simple olx price tracker",
+    "license": "free",
+    "authors": [
+        {
+            "name": "Ruslan Sheback",
+            "email": "ruslan.shebak@gmail.com"
+        }
+    ],
+    "require": {}
+}
