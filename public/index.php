@@ -1,29 +1,82 @@
 <?php
 
-require_once '../config/config.php';
-require_once '../src/classes/Subscription.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
-use Classes\Subscription;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Repositories\SubscriptionRepository;
+use Services\EmailService;
+use Services\HttpClient;
+use Services\PriceTrackerService;
+use Services\Validator;
 
-$config = require '../config/config.php';
-$db = new PDO(
+$log = new Logger('olx_price_tracker');
+$log->pushHandler(new StreamHandler(__DIR__ . '/../logs/app.log', Logger::DEBUG));
+
+$config = require __DIR__ . '/../config/config.php';
+$pdo = new PDO(
     "mysql:host={$config['db']['host']};dbname={$config['db']['name']}",
     $config['db']['user'],
     $config['db']['password']
 );
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$subscription = new Subscription($db);
+$subscriptionRepository = new SubscriptionRepository($pdo);
+$httpClient = new HttpClient($log);
+$emailService = new EmailService($config['mail']['from'], $config['mail']['from_name']);
+$priceTrackerService = new PriceTrackerService($subscriptionRepository, $httpClient, $emailService, $log);
+$validator = new Validator();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = json_decode(file_get_contents('php://input'), true);
-    $url = $data['url'];
-    $email = $data['email'];
+try {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
 
-    if ($subscription->addSubscription($url, $email)) {
-        echo json_encode(['status' => 'success', 'message' => 'Subscribed successfully']);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'Subscription failed']);
+        if (strpos($contentType, 'application/json') !== false) {
+            $rawData = file_get_contents('php://input');
+            $data = json_decode($rawData, true);
+
+            if (!$validator->validateSubscriptionData($data)) {
+                throw new Exception('Invalid input data');
+            }
+
+            if ($subscriptionRepository->addSubscription($data['url'], $data['email'])) {
+                $log->info("Subscription added: {$data['url']} for email: {$data['email']}");
+                sendApiResponse('success', 'Subscription added successfully!');
+            } else {
+                throw new Exception('Failed to add subscription');
+            }
+        } else {
+            throw new Exception('Unsupported content type');
+        }
     }
-} else {
-    echo json_encode(['status' => 'error', 'message' => 'Invalid request method']);
+} catch (Exception $e) {
+    $log->error('Error in POST request: ' . $e->getMessage());
+    sendApiResponse('error', $e->getMessage());
+}
+
+$subscriptions = $subscriptionRepository->getSubscriptions();
+
+foreach ($subscriptions as $subscription) {
+    try {
+        $currentPriceData = $priceTrackerService->fetchCurrentPrice($subscription['url']);
+        $log->info("Updating subscription ID {$subscription['id']} with price {$currentPriceData['price']} {$currentPriceData['currency']}");
+
+        $subscriptionRepository->updatePriceAndCurrency(
+            $subscription['id'],
+            $currentPriceData['price'],
+            $currentPriceData['currency']
+        );
+    } catch (Exception $e) {
+        $log->error("Error updating subscription ID {$subscription['id']}: " . $e->getMessage());
+    }
+}
+
+function sendApiResponse(string $status, string $message, array $data = []): void
+{
+    header('Content-Type: application/json');
+    echo json_encode([
+        'status' => $status,
+        'message' => $message,
+        'data' => $data
+    ]);
 }

@@ -1,0 +1,4 @@
+[2024-12-10T21:47:40.195269+00:00] olx_price_tracker.ERROR: Error in POST request: Unsupported content type [] []
+[2024-12-10T21:47:40.938886+00:00] olx_price_tracker.INFO: Updating subscription ID 3 with price 300 UAH [] []
+[2024-12-10T21:48:15.202367+00:00] olx_price_tracker.ERROR: Error in POST request: Unsupported content type [] []
+[2024-12-10T21:48:16.551213+00:00] olx_price_tracker.INFO: Updating subscription ID 3 with price 300 UAH [] []

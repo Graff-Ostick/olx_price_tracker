@@ -24,6 +24,7 @@ try {
             url VARCHAR(255) NOT NULL,
             email VARCHAR(255) NOT NULL,
             last_price DECIMAL(10, 2) DEFAULT NULL,
+            currency VARCHAR(255) NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             UNIQUE (url, email)
         );
