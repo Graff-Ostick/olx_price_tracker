@@ -2,3 +2,4 @@
 # ignore config
 /config/config.php
 /vendor/
+.env

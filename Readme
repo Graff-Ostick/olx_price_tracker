@@ -32,10 +32,7 @@ AssignUserID {user} {user}
 </VirtualHost>
 
 example of post
-    curl -X POST -H "Content-Type: application/json"   -d
-    '{"url": "https://www.olx.ua/d/uk/obyavlenie/mishka-grova-bloody-v8-IDVBUnT.html?bs=olx_pro_listing",
-     "email": "user@example.com"}'
-     http://opt.l/index.php
+    curl -X POST -H "Content-Type: application/json" -d '{"url": "https://www.olx.ua/d/uk/obyavlenie/mishka-grova-bloody-v8-IDVBUnT.html?bs=olx_pro_listing", "email": "user@example.com"}' http://opt.l/index.php
 
 Cron
     */10 * * * * /usr/bin/php /path/to/olx_price_tracker/public/index.php
