@@ -11,12 +11,12 @@ class ValidatorTest extends TestCase
 
         $validData = [
             'url' => 'https://example.com',
-            'email' => 'test@example.com'
+            'email' => 'my.flud.info@gmail.com'
         ];
 
         $invalidData1 = [
             'url' => '',
-            'email' => 'test@example.com'
+            'email' => 'my.flud.info@gmail.com'
         ];
 
         $invalidData2 = [

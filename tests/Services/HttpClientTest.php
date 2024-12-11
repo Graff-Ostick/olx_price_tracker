@@ -8,21 +8,38 @@ class HttpClientTest extends TestCase
 {
     public function testGetRequest()
     {
-        $logger = $this->createMock(Logger::class);
-        $httpClient = new HttpClient($logger);
+        $loggerMock = $this->createMock(Logger::class);
+        $httpClientMock = $this->getMockBuilder(HttpClient::class)
+            ->setConstructorArgs([$loggerMock])
+            ->onlyMethods(['curlExecWrapper'])
+            ->getMock();
 
-        $this->mockFunction('curl_exec', function($ch) {
-            return '{"price": 100.5, "currency": "USD"}';
-        });
+        $httpClientMock->method('curlExecWrapper')
+            ->willReturn('{"price": 100.5, "currency": "USD"}');
 
-        $result = $httpClient->get('https://example.com');
+        $result = $httpClientMock->get('https://example.com');
 
         $this->assertStringContainsString('price', $result);
+        $this->assertStringContainsString('currency', $result);
     }
 
-    private function mockFunction($functionName, callable $callback)
+    public function testGetRequestThrowsRuntimeExceptionOnError()
     {
-        runkit7_function_rename($functionName, $functionName . '_original');
-        runkit7_function_add($functionName, '', $callback);
+        $loggerMock = $this->createMock(Logger::class);
+
+        $loggerMock->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('CURL request returned false'));
+
+        $httpClientMock = $this->getMockBuilder(HttpClient::class)
+            ->setConstructorArgs([$loggerMock])
+            ->onlyMethods(['curlExecWrapper'])
+            ->getMock();
+
+        $httpClientMock->method('curlExecWrapper')
+            ->willReturn(false);
+
+        $this->expectException(\RuntimeException::class);
+        $httpClientMock->get('https://example.com');
     }
 }

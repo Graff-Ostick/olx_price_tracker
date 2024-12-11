@@ -10,14 +10,14 @@ class SubscriptionTest extends TestCase
         $subscription = new Subscription();
         $subscription->id = 1;
         $subscription->url = 'https://example.com';
-        $subscription->email = 'test@example.com';
+        $subscription->email = 'my.flud.info@gmail.com';
         $subscription->lastPrice = 100.5;
         $subscription->currency = 'USD';
         $subscription->createdAt = '2024-12-10';
 
         $this->assertEquals(1, $subscription->id);
         $this->assertEquals('https://example.com', $subscription->url);
-        $this->assertEquals('test@example.com', $subscription->email);
+        $this->assertEquals('my.flud.info@gmail.com', $subscription->email);
         $this->assertEquals(100.5, $subscription->lastPrice);
         $this->assertEquals('USD', $subscription->currency);
         $this->assertEquals('2024-12-10', $subscription->createdAt);

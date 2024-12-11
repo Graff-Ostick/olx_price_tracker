@@ -4,14 +4,15 @@ namespace Services;
 
 use Monolog\Logger;
 
-class HttpClient {
-
+class HttpClient
+{
     /**
      * @var Logger
      */
     private Logger $logger;
 
-    public function __construct($logger) {
+    public function __construct(Logger $logger)
+    {
         $this->logger = $logger;
     }
 
@@ -20,7 +21,8 @@ class HttpClient {
      * @return string
      * @throws \RuntimeException
      */
-    public function get(string $url): string {
+    public function get(string $url): string
+    {
         $ch = curl_init($url);
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -28,7 +30,7 @@ class HttpClient {
         curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0');
         curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Тайм-аут у секундах
 
-        $response = curl_exec($ch);
+        $response = $this->curlExecWrapper($ch);
 
         if (curl_errno($ch)) {
             $error_message = curl_error($ch);
@@ -45,5 +47,10 @@ class HttpClient {
         }
 
         return $response;
+    }
+
+    protected function curlExecWrapper($ch)
+    {
+        return curl_exec($ch);
     }
 }

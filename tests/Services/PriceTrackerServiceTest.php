@@ -19,9 +19,9 @@ class PriceTrackerServiceTest extends TestCase
 
         $priceTrackerService = new PriceTrackerService($repo, $httpClient,$emailService, $logger);
 
-        $httpClient->method('get')->willReturn('{"price": 100.5, "currency": "USD"}');
+        $httpClient->method('get')->willReturn('"priceCurrency":"USD","price":100.5/');
 
-        $result = $priceTrackerService->fetchCurrentPrice('https://example.com');
+        $result = $priceTrackerService->fetchCurrentPrice('https://www.olx.ua/d/uk/obyavlenie/akumulyatorna-lampa-liberty-9-w-4100k-opt-IDVTG2f.html?reason=hp%7Cpromoted');
 
         $this->assertEquals(100.5, $result['price']);
         $this->assertEquals('USD', $result['currency']);

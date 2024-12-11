@@ -20,7 +20,7 @@ class SubscriptionRepositoryTest extends TestCase
         $this->pdo->method('prepare')->willReturn($stmt);
         $stmt->method('execute')->willReturn(true);
 
-        $result = $this->repo->addSubscription('https://example.com', 'test@example.com');
+        $result = $this->repo->addSubscription('https://example.com', 'my.flud.info@gmail.com');
 
         $this->assertTrue($result);
     }
