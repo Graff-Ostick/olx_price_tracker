@@ -54,22 +54,7 @@ try {
     sendApiResponse('error', $e->getMessage());
 }
 
-$subscriptions = $subscriptionRepository->getSubscriptions();
-
-foreach ($subscriptions as $subscription) {
-    try {
-        $currentPriceData = $priceTrackerService->fetchCurrentPrice($subscription['url']);
-        $log->info("Updating subscription ID {$subscription['id']} with price {$currentPriceData['price']} {$currentPriceData['currency']}");
-
-        $subscriptionRepository->updatePriceAndCurrency(
-            $subscription['id'],
-            $currentPriceData['price'],
-            $currentPriceData['currency']
-        );
-    } catch (Exception $e) {
-        $log->error("Error updating subscription ID {$subscription['id']}: " . $e->getMessage());
-    }
-}
+$priceTrackerService->checkForPriceChanges();
 
 function sendApiResponse(string $status, string $message, array $data = []): void
 {
