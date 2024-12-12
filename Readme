@@ -1,39 +1,235 @@
-apache2 config
+# OLX Price Tracker
 
-<VirtualHost *:80>
-    ServerName {host_name}
-    DocumentRoot {path_to_folder}/olx_price_tracker/public
+OLX Price Tracker is a PHP-based service that monitors price changes on OLX listings. Users can subscribe to specific listings via a simple API and receive email notifications when prices change.
 
-    <Directory {path_to_folder}/olx_price_tracker/public>
-        AllowOverride All
-        Options +Indexes
-        Require all granted
-    </Directory>
+## Features
 
-    ErrorLog /var/log/apache2/{host_name}.log
-    CustomLog /var/log/apache2/{host_name}.log combined
+- **Automated Price Monitoring**: Regularly checks the prices of subscribed OLX listings.
+- **Email Notifications**: Alerts users via email when a price changes.
+- **API Integration**: Subscribe to price tracking through a JSON-based API.
+- **Easy Setup**: Minimal configuration needed for deployment.
 
-    # Serve .map files with the correct MIME type
-    AddType application/json .map
 
-    # Set the Expires header for .map files to 1 year (optional)
-    <IfModule mod_expires.c>
-        ExpiresByType application/json "access plus 1 year"
-    </IfModule>
+## Installation
 
-    # Enable the necessary headers for caching (optional)
-    <IfModule mod_headers.c>
-        Header set Cache-Control "public"
-        Header set Pragma "public"
-    </IfModule>
+### Option 1: Deployment Using Docker
 
-AssignUserID {user} {user}
+## Prerequisites
 
-</VirtualHost>
+- SMTP server (smtp.gmail.com)
+- Docker
 
-example of post
-    curl -X POST -H "Content-Type: application/json" -d '{"url": "https://www.olx.ua/d/uk/obyavlenie/mishka-grova-bloody-v8-IDVBUnT.html?bs=olx_pro_listing", "email": "user@example.com"}' http://opt.l/index.php
+1. Clone the Repository:
 
-Cron
+    ```bash
+    git clone https://github.com/your-repo/olx-price-tracker.git
+    cd olx-price-tracker
+    ```
+
+2. Update Configuration Files:
+
+    - Edit the `config/config.php` file:
+
+        ```php
+        return [
+            'db' => [
+                'host' => 'mysql',
+                'name' => 'olx_tracker',
+                'user' => 'root',
+                'password' => 'root',
+            ],
+            'mail' => [
+                'from' => 'your_email@example.com',
+                'from_name' => 'OLX Price Tracker',
+            ],
+        ];
+        ```
+
+    - Create a `.env` file with the following content:
+
+        ```env
+        MYSQL_ROOT_PASSWORD=your_root_pass
+        MYSQL_DATABASE=olx_price_tracker
+        MYSQL_USER=opt
+        MYSQL_PASSWORD=your_pass
+
+        APP_PORT=your_app_port {for example 81}
+        DB_PORT=your_app_port {for example 3307}
+
+        SMTP=smtp.gmail.com
+        SMTP_PORT=587
+        SENDMAIL_PATH=/usr/bin/msmtp -t -i
+        SMTP_GMAIL_USER=your_email@gmail.com
+        SMTP_GMAIL_PASS=your_smtp_pass
+        ```
+
+3. Build and Run Docker Containers:
+
+    ```bash
+    docker-compose up -d
+    ```
+
+4. Access the Application:
+
+    Open your browser and go to `http://localhost` to use the OLX Price Tracker.
+
+5. Configure Cron Jobs:
+
+    Add a cron job inside the container to run the price checker:
+
+    ```bash
+    docker exec -it olx-price-tracker-app crontab -e
+    ```
+
+    Add the following line to run the checker every 10 minutes:
+
+    ```
+    */10 * * * * php /var/www/html/public/index.php
+    ```
+
+### Option 2: Manual Deployment
+
+## Prerequisites
+
+- PHP 7.4 or higher
+- Apache2 or compatible web server
+- MySQL database
+- Composer (for dependency management)
+- Cron scheduler (for periodic checks)
+- SMTP server (smtp.gmail.com)
+
+#### 1. Clone the Repository
+
+    ```bash
+    git clone https://github.com/your-repo/olx-price-tracker.git
+    cd olx-price-tracker
+    ```
+
+#### 2. Install Dependencies
+
+    ```bash
+    composer install
+    ```
+
+#### 3. Configure the Application
+
+Update the configuration file located at `config/config.php`:
+
+    ```php
+    return [
+        'db' => [
+            'host' => 'localhost',
+            'name' => 'your_database_name',
+            'user' => 'your_database_user',
+            'password' => 'your_database_password',
+        ],
+        'mail' => [
+            'from' => 'your_email@example.com',
+            'from_name' => 'OLX Price Tracker',
+        ],
+    ];
+    ```
+
+Create the database tables by importing the provided SQL script:
+
+    ```bash
+    mysql -u your_database_user -p your_database_name < database/schema.sql
+    ```
+
+#### 4. Set Up the Web Server
+
+Add the following configuration to your Apache server:
+
+    ```apache
+    <VirtualHost *:80>
+        ServerName your-domain.com
+        DocumentRoot /path/to/olx_price_tracker/public
+
+        <Directory /path/to/olx_price_tracker/public>
+            AllowOverride All
+            Require all granted
+        </Directory>
+
+        ErrorLog /var/log/apache2/olx_price_tracker_error.log
+        CustomLog /var/log/apache2/olx_price_tracker_access.log combined
+    </VirtualHost>
+    ```
+
+Restart Apache:
+
+    ```bash
+    sudo systemctl restart apache2
+    ```
+
+#### 5. Set Up Cron Jobs
+
+Add a cron job to run the price checker at regular intervals:
+
+    ```bash
     */10 * * * * /usr/bin/php /path/to/olx_price_tracker/public/index.php
+    ```
 
+---
+
+## Usage
+
+### Subscribing to a Listing
+
+To subscribe to a listing, send a POST request with the listing URL and your email:
+
+```bash
+curl -X POST -H "Content-Type: application/json" \
+-d '{"url": "https://www.olx.ua/example-listing", "email": "user@example.com"}' \
+http://your-domain.com/index.php
+```
+
+### Price Monitoring
+
+The system will automatically check for price changes and send email notifications when a change is detected.
+
+---
+
+## Directory Structure
+
+- **src/**: Core application logic, including services and utilities.
+- **public/**: Publicly accessible files, including the entry point.
+- **config/**: Configuration files for the application.
+- **logs/**: Application logs for debugging.
+- **database/**: SQL scripts for setting up the database.
+
+---
+
+## Development
+
+### Testing
+
+1. Use the API to add subscriptions or manually insert test data into the database.
+2. Trigger the `PriceTrackerService::checkForPriceChanges` function to test price checking functionality.
+
+### Logs
+
+Check the `logs/` directory for detailed logs of application activity.
+
+---
+
+## Contributing
+
+Contributions are welcome! To get started:
+
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature-name`.
+3. Commit your changes: `git commit -m 'Add some feature'`.
+4. Push to the branch: `git push origin feature-name`.
+5. Submit a pull request.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+---
+
+## Contact
+
+For support or inquiries, email [your_email@example.com](mailto:your_email@example.com).

@@ -47,9 +47,10 @@ class PriceTrackerService {
         foreach ($subscriptions as $subscription) {
             try {
                 $currentPriceData = $this->fetchCurrentPrice($subscription['url']);
-                $lastPrice = $subscription['lastPrice'];
+                $lastPrice = (float)$subscription['last_price'];
+                $lastCurrency = $subscription['currency'];
 
-                if ($lastPrice !== $currentPriceData['price']) {
+                if ($lastPrice !== $currentPriceData['price'] || $lastCurrency !== $currentPriceData['currency']) {
                     $this->repository->updatePriceAndCurrency(
                         $subscription['id'],
                         $currentPriceData['price'],
@@ -60,6 +61,7 @@ class PriceTrackerService {
                         $subscription['email'],
                         $subscription['url'],
                         $lastPrice,
+                        $lastCurrency,
                         $currentPriceData['price'],
                         $currentPriceData['currency']
                     );
@@ -74,16 +76,17 @@ class PriceTrackerService {
      * @param string $email
      * @param string $url
      * @param float $oldPrice
+     * @param string $oldCurrency
      * @param float $newPrice
      * @param string $currency
      * @return void
      */
-    private function sendPriceChangeNotification(string $email, string $url, float $oldPrice, float $newPrice, string $currency): void {
+    private function sendPriceChangeNotification(string $email, string $url, float $oldPrice, string $oldCurrency, float $newPrice, string $currency): void {
         $subject = "Price change notification for your subscription!";
         $body = "
             <h1>Price Change Alert</h1>
             <p>The price for the listing <a href=\"$url\">$url</a> has changed.</p>
-            <p>Old price: $oldPrice $currency</p>
+            <p>Old price: $oldPrice $oldCurrency</p>
             <p>New price: $newPrice $currency</p>
             <p>Stay tuned for more updates!</p>
         ";

@@ -27,34 +27,29 @@ $emailService = new EmailService($config['mail']['from'], $config['mail']['from_
 $priceTrackerService = new PriceTrackerService($subscriptionRepository, $httpClient, $emailService, $log);
 $validator = new Validator();
 
-try {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD']  === 'POST') {
+    $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
 
-        if (strpos($contentType, 'application/json') !== false) {
-            $rawData = file_get_contents('php://input');
-            $data = json_decode($rawData, true);
+    if (strpos($contentType, 'application/json') !== false) {
+        $rawData = file_get_contents('php://input');
+        $data = json_decode($rawData, true);
 
-            if (!$validator->validateSubscriptionData($data)) {
-                throw new Exception('Invalid input data');
-            }
-
-            if ($subscriptionRepository->addSubscription($data['url'], $data['email'])) {
-                $log->info("Subscription added: {$data['url']} for email: {$data['email']}");
-                sendApiResponse('success', 'Subscription added successfully!');
-            } else {
-                throw new Exception('Failed to add subscription');
-            }
-        } else {
-            throw new Exception('Unsupported content type');
+        if (!$validator->validateSubscriptionData($data)) {
+            throw new Exception('Invalid input data');
         }
-    }
-} catch (Exception $e) {
-    $log->error('Error in POST request: ' . $e->getMessage());
-    sendApiResponse('error', $e->getMessage());
-}
 
-$priceTrackerService->checkForPriceChanges();
+        if ($subscriptionRepository->addSubscription($data['url'], $data['email'])) {
+            $log->info("Subscription added: {$data['url']} for email: {$data['email']}");
+            sendApiResponse('success', 'Subscription added successfully!');
+        } else {
+            throw new Exception('Failed to add subscription');
+        }
+    } else {
+        throw new Exception('Unsupported content type');
+    }
+} else {
+    $priceTrackerService->checkForPriceChanges();
+}
 
 function sendApiResponse(string $status, string $message, array $data = []): void
 {
