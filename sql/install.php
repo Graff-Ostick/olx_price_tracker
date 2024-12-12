@@ -6,7 +6,7 @@ try {
     $pdo = new PDO(
         "mysql:host={$config['db']['host']};dbname={$config['db']['name']}",
         $config['db']['user'],
-        $config['db']['password'],
+        $config['db']['pass'],
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
     );
 
@@ -25,6 +25,8 @@ try {
             email VARCHAR(255) NOT NULL,
             last_price DECIMAL(10, 2) DEFAULT NULL,
             currency VARCHAR(255) DEFAULT 'UAH',
+            is_verified TINYINT(1) DEFAULT 0,
+            token VARCHAR(255) DEFAULT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             UNIQUE (url, email)
         );

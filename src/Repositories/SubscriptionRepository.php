@@ -3,25 +3,38 @@ namespace Repositories;
 
 use PDO;
 
-class SubscriptionRepository {
+class SubscriptionRepository
+{
     private $db;
 
-    public function __construct(PDO $db) {
+    public function __construct(PDO $db)
+    {
         $this->db = $db;
     }
 
-    public function addSubscription(string $url, string $email): bool {
+    /**
+     * @param string $url
+     * @param string $email
+     * @param string $token
+     * @return bool
+     */
+    public function addSubscription(string $url, string $email, string $token): bool
+    {
         try {
             $stmt = $this->db->prepare(
-                'INSERT INTO subscriptions (url, email) VALUES (:url, :email)'
+                'INSERT INTO subscriptions (url, email, token, is_verified) VALUES (:url, :email, :token, 0)'
             );
-            return $stmt->execute(['url' => $url, 'email' => $email]);
+            return $stmt->execute(['url' => $url, 'email' => $email, 'token' => $token]);
         } catch (\PDOException $e) {
             throw new \RuntimeException('Database error: ' . $e->getMessage());
         }
     }
 
-    public function getSubscriptions(): array {
+    /**
+     * @return array
+     */
+    public function getSubscriptions(): array
+    {
         try {
             $stmt = $this->db->query('SELECT * FROM subscriptions');
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -30,7 +43,14 @@ class SubscriptionRepository {
         }
     }
 
-    public function updatePriceAndCurrency(int $subscriptionId, float $price, string $currency): bool {
+    /**
+     * @param int $subscriptionId
+     * @param float $price
+     * @param string $currency
+     * @return bool
+     */
+    public function updatePriceAndCurrency(int $subscriptionId, float $price, string $currency): bool
+    {
         try {
             $stmt = $this->db->prepare('
                 UPDATE subscriptions SET last_price = :price, currency = :currency WHERE id = :id
@@ -40,4 +60,32 @@ class SubscriptionRepository {
             throw new \RuntimeException('Database error: ' . $e->getMessage());
         }
     }
+
+    /**
+     * @param string $token
+     * @return array
+     */
+    public function getSubscriptionByToken(string $token): ?array
+    {
+        try {
+            $stmt = $this->db->prepare("SELECT * FROM subscriptions WHERE token = :token LIMIT 1");
+            $stmt->execute(['token' => $token]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result ?: null;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Database error: ' . $e->getMessage());
+        }
+    }
+
+    public function setVerifiedById(int $id): void
+    {
+        try {
+            $stmt = $this->db->prepare('UPDATE subscriptions SET is_verified = 1 WHERE id = :id');
+            $stmt->execute(['id' => $id]);
+            $stmt->rowCount();
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Database error: ' . $e->getMessage());
+        }
+    }
+
 }

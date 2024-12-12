@@ -25,4 +25,18 @@ class EmailService
             return 'Error: Failed to send email.';
         }
     }
+
+    public function sendVerificationEmail($to, $token)
+    {
+        $verificationLink = "http://opt.l/index.php?token=$token";
+        $subject = "Email Confirmation";
+        $body = "
+            <h1>Email Confirmation</h1>
+            <p>To confirm your subscription, click the link below:</p>
+            <p><a href=\"$verificationLink\">Confirm Email</a></p>
+        ";
+
+        return $this->sendEmail($to, $subject, $body);
+    }
+
 }

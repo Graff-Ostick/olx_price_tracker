@@ -9,4 +9,6 @@ class Subscription {
     public $lastPrice;
     public $currency;
     public $createdAt;
+    public $token;
+    public $isVerified;
 }
