@@ -1,0 +1,9 @@
+account default
+host ${SMTP}
+port ${SMTP_PORT}
+from ${SMTP_GMAIL_USER}
+auth on
+user ${SMTP_GMAIL_USER}
+password ${SMTP_GMAIL_PASS}
+tls on
+logfile /var/log/msmtp.log
