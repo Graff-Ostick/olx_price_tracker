@@ -28,22 +28,6 @@ OLX Price Tracker is a PHP-based service that monitors price changes on OLX list
 
 2. Update Configuration Files:
 
-    - Edit the `config/config.php` file:
-
-        ```php
-        return [
-            'db' => [
-                'host' => 'mysql',
-                'name' => 'olx_tracker',
-                'user' => 'root',
-                'password' => 'root',
-            ],
-            'mail' => [
-                'from' => 'your_email@example.com',
-                'from_name' => 'OLX Price Tracker',
-            ],
-        ];
-        ```
 
     - Create a `.env` file with the following content:
 
@@ -116,18 +100,12 @@ OLX Price Tracker is a PHP-based service that monitors price changes on OLX list
 Update the configuration file located at `config/config.php`:
 
     ```php
-    return [
-        'db' => [
-            'host' => 'localhost',
-            'name' => 'your_database_name',
-            'user' => 'your_database_user',
-            'password' => 'your_database_password',
-        ],
-        'mail' => [
-            'from' => 'your_email@example.com',
-            'from_name' => 'OLX Price Tracker',
-        ],
-    ];
+    DB_HOST=127.0.0.1:3306
+    DB_NAME=olx_price_tracker
+    DB_USER=your_user
+    DB_PASS=your_password
+    MAIL_FROM=example@gmail.com
+    MAIL_FROM_NAME="Olx Price Tracker"
     ```
 
 Create the database tables by importing the provided SQL script:
